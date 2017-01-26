@@ -1,8 +1,9 @@
-
-from git import Repo
-
-
-
+from git import Repo, InvalidGitRepositoryError
 
 if __name__ == "__main__":
-    pass
+    try:
+        repo = Repo(".")
+        print(repo.tags)
+    except InvalidGitRepositoryError:
+        print("This is not a git repository")
+        exit()
