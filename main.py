@@ -90,7 +90,8 @@ def main():
         else:
             semver_dict = get_semver_dict("1.0.0")
 
-        repo.create_tag("%(major)s.%(minor)s.%(patch)s" % semver_dict)
+        # repo.create_tag("%(major)s.%(minor)s.%(patch)s" % semver_dict)
+        print("%(major)s.%(minor)s.%(patch)s" % semver_dict)
 
     except InvalidGitRepositoryError:
         print("This is not a git repository")
