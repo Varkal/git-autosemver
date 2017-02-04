@@ -6,7 +6,7 @@ class NoCommitSinceLastTagError(Exception):
     pass
 
 
-def is_semver_tag(tag, config=None):
+def is_semver_tag(tag, config):
     pattern = re.compile(
         "^" + re.escape(config["prefix"]) +
         "(\d+)\.(\d+)\.(\d+)" +
@@ -15,13 +15,15 @@ def is_semver_tag(tag, config=None):
     return pattern.search(tag["name"])
 
 
-def is_major_commit(commit):
-    pattern = re.compile(r"^.*#major.*$")
+def is_major_commit(commit, config):
+    keywords = "|".join([re.escape(keyword) for keyword in config["major_keywords"]])
+    pattern = re.compile(r"^.*(" + keywords + ").*$")
     return pattern.search(commit.message)
 
 
-def is_minor_commit(commit):
-    pattern = re.compile(r"^.*feat.*$")
+def is_minor_commit(commit, config):
+    keywords = "|".join([re.escape(keyword) for keyword in config["minor_keywords"]])
+    pattern = re.compile(r"^.*(" + keywords + ").*$")
     return pattern.search(commit.message)
 
 
@@ -54,15 +56,15 @@ def get_semver_dict(tag_name):
     }
 
 
-def get_rev_type(commits):
+def get_rev_type(commits, config):
     if len(commits) == 0:
         raise NoCommitSinceLastTagError
 
     rev_type = "patch"
     for commit in commits:
-        if rev_type != "major" and is_major_commit(commit):
+        if rev_type != "major" and is_major_commit(commit, config):
             rev_type = "major"
-        if rev_type != "major" and is_minor_commit(commit):
+        if rev_type != "major" and is_minor_commit(commit, config):
             rev_type = "minor"
     return rev_type
 
@@ -79,19 +81,30 @@ def calc_new_version(semver_dict, rev_type):
 def main():
     try:
         repo = Repo(".")
-        config = {"prefix": "", "suffix": ""}
+        config = {
+            "prefix": "",
+            "suffix": "",
+            "default": "1.0.0",
+            "major_keywords": ["#major"],
+            "minor_keywords": ["feat"],
+            "create_tag": False
+        }
         tag_list = [tag for tag in create_tag_list(repo.tags) if is_semver_tag(tag, config)]
 
         if len(tag_list):
             last_tag = max(tag_list, key=lambda tag: tag["timestamp"])
             commits = get_commits_more_recent_than(repo, last_tag["commit"])
-            rev_type = get_rev_type(commits)
+            rev_type = get_rev_type(commits, config)
             semver_dict = calc_new_version(get_semver_dict(last_tag["name"]), rev_type)
         else:
-            semver_dict = get_semver_dict("1.0.0")
+            semver_dict = get_semver_dict(config["default"])
 
-        # repo.create_tag("%(major)s.%(minor)s.%(patch)s" % semver_dict)
-        print("%(major)s.%(minor)s.%(patch)s" % semver_dict)
+        version_number = config["prefix"] + ("%(major)s.%(minor)s.%(patch)s" % semver_dict) + config["suffix"]
+
+        if config["create_tag"]:
+            repo.create_tag(version_number)
+        else:
+            print(version_number)
 
     except InvalidGitRepositoryError:
         print("This is not a git repository")
