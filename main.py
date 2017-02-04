@@ -1,3 +1,5 @@
+import json
+
 from git import Repo, InvalidGitRepositoryError
 import re
 
@@ -78,17 +80,29 @@ def calc_new_version(semver_dict, rev_type):
     return semver_dict
 
 
+def get_config():
+    config = {
+        "prefix": "",
+        "suffix": "",
+        "default": "1.0.0",
+        "major_keywords": ["#major"],
+        "minor_keywords": ["feat"],
+        "create_tag": False
+    }
+    try:
+        with open("autosemver.json") as file:
+            config.update(json.loads(file.read()))
+    except FileNotFoundError:
+        pass
+
+    return config
+
+
 def main():
     try:
         repo = Repo(".")
-        config = {
-            "prefix": "",
-            "suffix": "",
-            "default": "1.0.0",
-            "major_keywords": ["#major"],
-            "minor_keywords": ["feat"],
-            "create_tag": False
-        }
+        config = get_config()
+
         tag_list = [tag for tag in create_tag_list(repo.tags) if is_semver_tag(tag, config)]
 
         if len(tag_list):
