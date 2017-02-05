@@ -1,6 +1,7 @@
 import json
 
 from git import Repo, InvalidGitRepositoryError
+import argparse
 import re
 
 
@@ -81,20 +82,33 @@ def calc_new_version(semver_dict, rev_type):
 
 
 def get_config():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--prefix", action="store")
+    parser.add_argument("-s", "--suffix", action="store")
+    parser.add_argument("-d", "--default", action="store")
+    parser.add_argument("-m", "--minor-keywords", action="append")
+    parser.add_argument("-M", "--major-keywords", action="append")
+    parser.add_argument("-t", "--create-tag", action="store", type=bool)
+    parser.add_argument("-c", "--config-file", action="store", type=bool)
+    args_dict = {k: v for k, v in vars(parser.parse_args()).items() if v is not None}
     config = {
         "prefix": "",
         "suffix": "",
         "default": "1.0.0",
         "major_keywords": ["#major"],
         "minor_keywords": ["feat"],
-        "create_tag": False
+        "create_tag": False,
+        "config_file": "autosemver.json"
     }
     try:
-        with open("autosemver.json") as file:
+        with open(config["config_file"]) as file:
             config.update(json.loads(file.read()))
     except FileNotFoundError:
-        pass
+        if args_dict["config_file"]:
+            print("The configuration file specified haven't been found")
+            exit(code=3)
 
+    config.update(args_dict)
     return config
 
 
@@ -122,10 +136,10 @@ def main():
 
     except InvalidGitRepositoryError:
         print("This is not a git repository")
-        exit()
+        exit(code=1)
     except NoCommitSinceLastTagError:
         print("No commits since last tag")
-        exit()
+        exit(code=2)
 
 
 if __name__ == "__main__":
