@@ -15,6 +15,7 @@ Configuration
 git-autosemver can be configured from the command-line, or by adding an autosemver.json file in the repository
 
 The configuration options are :
+
 - **prefix**: A prefix before the semver number. Example : "alpha-" will match/generate "alpha-1.0.1". Default is empty (No prefix)
 - **suffix**: A suffix after the semver number. Example : "-SNAPSHOT" will match/generate "1.0.1-SNAPSHOT". Default is empty (No suffix)
 - **default**: If no tag with semver number and given preffix/suffix has been found, autosemver will use this version number
