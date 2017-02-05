@@ -18,12 +18,10 @@ The configuration options are :
 
 - **prefix**: A prefix before the semver number. Example : "alpha-" will match/generate "alpha-1.0.1". Default is empty (No prefix)
 - **suffix**: A suffix after the semver number. Example : "-SNAPSHOT" will match/generate "1.0.1-SNAPSHOT". Default is empty (No suffix)
-- **default**: If no tag with semver number and given preffix/suffix has been found, autosemver will use this version number
-as fallback. Default : "1.0.0",
+- **default**: If no tag with semver number and given preffix/suffix has been found, autosemver will use this version number as fallback. Default : "1.0.0",
 - **major_keywords**: If any of those words are found in a commit message, autosemver will generate a major version. Default:["#major"],
 - **minor_keywords**: If any of those words are found in a commit message, autosemver will generate a minor version. Default:["feat"],
-- **create_tag**: Does autosemver should automaticaly add a git tag with the generated version number ? If false, just print it on std output.
-Default: false
+- **create_tag**: Does autosemver should automaticaly add a git tag with the generated version number ? If false, just print it on std output. Default: false
 - **config_file**: (Only on command-line) Specify a different configuration file than "autosemver.json"
 
 
